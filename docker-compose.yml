@@ -1,0 +1,42 @@
+version: '2.2'
+
+volumes:
+  php_share:
+
+services:
+  sf4_apache:
+    build: apache
+    container_name: sf4_apache
+    volumes:
+      - ./apache/config/vhosts:/etc/apache2/sites-enabled
+      - php_share:/home/wwwroot/sf4
+    restart: unless-stopped
+    depends_on:
+      - php
+    networks:
+      - app
+
+  php:
+    build: webinterface
+    container_name: sf4_php
+    restart: unless-stopped
+    volumes:
+      - php_share:/home/wwwroot/sf4
+    networks:
+      - app
+
+  nginx:
+    container_name: nginx
+    restart: unless-stopped
+    depends_on:
+        - sf4_apache
+    build: nginx
+    restart: unless-stopped
+    ports:
+      - "5565:80"
+    networks:
+    - app
+
+networks:
+  app:
+    driver: bridge
